@@ -17,47 +17,37 @@ s3 = boto3.client(
     's3',
     aws_access_key_id='AKIAT3H7RDDM4XW4IREH',
     aws_secret_access_key='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',
-    region_name='eu-north-1c'
+    region_name='eu-north-1'
 )
 
 # -----------------------------
 # RDS DATABASE CONNECTION
 # -----------------------------
 
-connection = pymysql.connect(
-    host="resume-analyzer-db.cl0igecm6h52.eu-north-1.rds.amazonaws.com",
-    user="admin",
-    password="admin123456",
-    database="resumeanalyzer_db"
-)
+def get_db_connection():
 
-cursor = connection.cursor()
+    return pymysql.connect(
+        host="resume-analyzer-db.cl0igecm6h52.eu-north-1.rds.amazonaws.com",
+        user="admin",
+        password="admin123456",
+        database="resumeanalyzer_db"
+    )
+
+
 
 # -----------------------------
 # CREATE TABLE
 # -----------------------------
 
-cursor.execute("""
 
-CREATE TABLE IF NOT EXISTS ats_results (
+#connection = get_db_connection()
+#cursor = connection.cursor()
 
-    id INT AUTO_INCREMENT PRIMARY KEY,
 
-    filename VARCHAR(255),
 
-    ats_score INT,
+ 
 
-    matched_skills TEXT,
-
-    missing_skills TEXT,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-)
-
-""")
-
-connection.commit()
+#connection.commit()
 
 # -----------------------------
 # SKILLS DATABASE
@@ -176,6 +166,7 @@ def home():
 
 @app.route('/upload', methods=['POST'])
 
+@app.route('/upload', methods=['POST'])
 def upload_resume():
 
     try:
@@ -189,20 +180,30 @@ def upload_resume():
             ''
         )
 
+        # File name
+        filename = file.filename
+
+        file_content = file.read()
+
+        import io
+
         # Upload to S3
         s3.upload_fileobj(
-            file,
+            io.BytesIO(file_content),
             BUCKET_NAME,
-            file.filename
+            filename
         )
 
-        s3_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{file.filename}"
+        # S3 URL
+        s3_url = f"https://{BUCKET_NAME}.s3.eu-north-1.amazonaws.com/{filename}"
 
         # Reset file pointer
         file.seek(0)
 
         # Read PDF
-        pdf_reader = PyPDF2.PdfReader(file)
+        pdf_reader = PyPDF2.PdfReader(
+            io.BytesIO(file_content)
+        )
 
         text = ""
 
@@ -224,28 +225,27 @@ def upload_resume():
         )
 
         # Store result in RDS
-        cursor.execute("""
-        INSERT INTO ats_results
-        (filename, ats_score, matched_skills, missing_skills)
 
-        VALUES (%s, %s, %s, %s)
-        """, (
+        connection = get_db_connection()
+        cursor = connection.cursor()
 
-            file.filename,
-
-            ats_result["ats_score"],
-
-            ",".join(
-                ats_result["matched_skills"]
-            ),
-
-            ",".join(
-                ats_result["missing_skills"]
-            )
-
-        ))
+        cursor.execute(
+            """
+            INSERT INTO ats_results
+            (filename, ats_score, matched_skills, missing_skills)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (
+                filename,
+                ats_result["ats_score"],
+                ",".join(ats_result["matched_skills"]),
+                ",".join(ats_result["missing_skills"])
+             )
+        )
 
         connection.commit()
+        cursor.close()
+        connection.close()
 
         # Return response
         return jsonify({
@@ -275,7 +275,6 @@ def upload_resume():
             "error": str(e)
 
         })
-
 # -----------------------------
 # RUN APP
 # -----------------------------
