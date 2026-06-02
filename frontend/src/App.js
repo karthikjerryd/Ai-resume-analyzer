@@ -5,6 +5,7 @@ function App() {
 const [file, setFile] = useState(null);
 const [jobDescription, setJobDescription] = useState("");
 const [result, setResult] = useState(null);
+const [history, setHistory] = useState([]);
 
 const handleUpload = async () => {
 if (!file) {
@@ -31,6 +32,20 @@ try {
 }
 
 
+};
+
+const fetchHistory = async () => {
+  try {
+    const response = await axios.get(
+      "/history"
+    );
+
+    setHistory(response.data);
+
+  } catch (error) {
+    console.log(error);
+    alert("Failed to fetch history");
+  }
 };
 
 return ( <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6"> <div className="w-full max-w-4xl bg-slate-900 rounded-3xl shadow-2xl p-8 border border-slate-800">
@@ -65,6 +80,14 @@ return ( <div className="min-h-screen bg-slate-950 text-white flex items-center 
         className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 font-bold text-lg hover:scale-105 transition-all duration-300"
       >
         Analyze Resume
+      <button
+         onClick={fetchHistory}
+         className="w-full py-4 rounded-xl bg-slate-700 font-bold text-lg hover:bg-slate-600 transition-all duration-300"
+      >
+        View History
+      </button>
+
+
       </button>
 
     </div>
