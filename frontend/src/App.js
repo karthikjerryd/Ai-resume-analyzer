@@ -37,7 +37,7 @@ function App() {
         "http://16.170.173.131/history"
       );
 
-      setHistory(response.data);
+      setHistory(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.log(error);
       alert("Failed to fetch history");
@@ -110,7 +110,12 @@ function App() {
                 </h3>
 
                 <div className="flex flex-wrap gap-2">
-                  {result.matched_skills?.map((skill, index) => (
+                  {(Array.isArray(result.matched_skills)
+                    ? result.matched_skills
+                    : String(result.matched_skills || "")
+                        .split(",")
+                        .filter(Boolean)
+                  ).map((skill, index) => (
                     <span
                       key={index}
                       className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full"
@@ -127,7 +132,12 @@ function App() {
                 </h3>
 
                 <div className="flex flex-wrap gap-2">
-                  {result.missing_skills?.map((skill, index) => (
+                  {(Array.isArray(result.missing_skills)
+                    ? result.missing_skills
+                    : String(result.missing_skills || "")
+                        .split(",")
+                        .filter(Boolean)
+                  ).map((skill, index) => (
                     <span
                       key={index}
                       className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full"
