@@ -275,10 +275,45 @@ def upload_resume():
             "error": str(e)
 
         })
-# -----------------------------
-# RUN APP
+# ----------------------------# RUN APP
 # -----------------------------
 
+@app.route('/history', methods=['GET'])
+def get_history():
+
+    try:
+
+        connection = get_db_connection()
+
+        cursor = connection.cursor(
+            pymysql.cursors.DictCursor
+        )
+
+        cursor.execute("""
+            SELECT
+                id,
+                filename,
+                ats_score,
+                matched_skills,
+                missing_skills,
+                created_at
+            FROM ats_results
+            ORDER BY created_at DESC
+        """)
+
+        results = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify(results)
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        })
 if __name__ == '__main__':
 
     app.run(
