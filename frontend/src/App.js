@@ -150,6 +150,25 @@ function App() {
 
             </div>
 
+            {result.suggestions && result.suggestions.length > 0 && (
+              <div className="mt-8 bg-slate-800 p-5 rounded-2xl">
+                <h3 className="text-yellow-400 text-xl font-bold mb-3">
+                  AI Suggestions
+                </h3>
+
+                <ul className="space-y-2">
+                  {result.suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="text-slate-200"
+                    >
+                      • {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </div>
         )}
 
