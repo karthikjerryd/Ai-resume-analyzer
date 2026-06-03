@@ -224,6 +224,25 @@ def upload_resume():
             job_description
         )
 
+        # Generate AI Suggestions
+        suggestions = []
+
+        for skill in ats_result["missing_skills"]:
+            suggestions.append(
+                f"Consider adding experience with {skill}."
+            )
+
+        suggestions.append(
+            "Include measurable achievements using numbers and percentages."
+        )
+
+        suggestions.append(
+            "Highlight impactful projects and technologies used."
+        )
+
+
+
+
         # Store result in RDS
 
         connection = get_db_connection()
@@ -262,7 +281,9 @@ def upload_resume():
 
             "missing_skills": ats_result["missing_skills"],
 
-            "ats_score": ats_result["ats_score"]
+            "ats_score": ats_result["ats_score"],
+
+            "suggestions": suggestions
 
         })
 
