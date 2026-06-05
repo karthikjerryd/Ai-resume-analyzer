@@ -19,7 +19,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "http://16.170.173.131/upload",
+        "/upload",
         formData
       );
 
@@ -34,7 +34,7 @@ function App() {
   const fetchHistory = async () => {
     try {
       const response = await axios.get(
-        "http://16.170.173.131/history"
+        "/history"
       );
 
       setHistory(Array.isArray(response.data) ? response.data : []);
